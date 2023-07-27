@@ -34,21 +34,62 @@ class ConnectionTestActor : ReceiveActor
         Self.Tell(new TestMessage());
     }
 
-    private Task OnTestMessageAsync(TestMessage arg)
+    private async Task OnTestMessageAsync(TestMessage arg)
     {
-        RabbitHelper.TestRabbitConnection();
-        
-        return Task.CompletedTask;
-        
+        //RabbitHelper.TestRabbitConnection();
+
+        //return Task.CompletedTask;
+
         // Running the CreateConnection method with Task.Run
         //   sets the current scheduler back to the default
         //   so the MainLoop can start.
-        // await RabbitHelper.TestRabbitConnectionAsync();
+        await RabbitHelper.TestRabbitConnectionExAsync();
     }
 }
 
 public static class RabbitHelper
 {
+    public static async Task TestRabbitConnectionExAsync()
+    {
+        try
+        {
+            Console.WriteLine("Invoking: TestRabbitConnection");
+
+            var factory = new ConnectionFactory()
+            {
+                Password = "Pho#1enix",
+                UserName = "admin",
+                Port = 5672,
+                HostName = "mchris-x15"
+            };
+
+            var source = new TaskCompletionSource<IConnection>();
+            var thread = new Thread(() =>
+            {
+                try
+                {
+                    source.SetResult(factory.CreateConnection());
+                }
+                catch (Exception e)
+                {
+                    source.SetException(e);
+                }
+            });
+
+            thread.Start();
+
+            var connection = await source.Task;
+
+            Console.WriteLine("Connected!");
+
+            connection.Close();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+    }
+
     public static async Task TestRabbitConnectionAsync()
     {
         try
@@ -57,10 +98,10 @@ public static class RabbitHelper
 
             var factory = new ConnectionFactory()
             {
-                Password = "password",
-                UserName = "tester",
+                Password = "Pho#1enix",
+                UserName = "admin",
                 Port = 5672,
-                HostName = "localhost"
+                HostName = "mchris-x15"
             };
 
             var connection = await Task.Run(() => factory.CreateConnection());
@@ -83,10 +124,10 @@ public static class RabbitHelper
 
             var factory = new ConnectionFactory()
             {
-                Password = "password",
-                UserName = "tester",
+                Password = "Pho#1enix",
+                UserName = "admin",
                 Port = 5672,
-                HostName = "localhost"
+                HostName = "mchris-x15"
             };
             var connection = factory.CreateConnection();
 
